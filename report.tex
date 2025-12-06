@@ -5,8 +5,8 @@
 % Document title
 \title{Assignment 2 (ML for TS) - MVA}
 \author{
-Firstname Lastname \email{youremail1@mail.com} \\ % student 1
-Firstname Lastname \email{youremail2@mail.com} % student 2
+Tristan Montalbetti \email{tristan.montalbetti@etu.minesparis.psl.eu} \\ % student 1
+Jules Royer \email{jules.royer@etu.minesparis.psl.eu} % student 2
 }
 
 \begin{document}
@@ -80,6 +80,142 @@ Wold's theorem states that any weakly stationary process can be written as the s
 \end{exercise}
 
 \begin{solution}  % ANSWER HERE
+%here
+
+\paragraph*{Mean and Autocovariance of $Y_t$}
+For the MA($\infty$) process $Y_t=\sum_{k\ge 0} \psi_k\varepsilon_{t-k}$,
+the square summability $\sum_k \psi_k^2<\infty$ ensures that
+$\sum_k \psi_k\varepsilon_{t-k}$ converges in $L^2$.
+But $L^2$-convergence implies $L^1$-convergence, 
+and expectation is continuous in $L^1$.
+
+\textit{Thus we can swap expectation and infinite sum
+in both cases $\mathbb{E}[Y_t]$ and $\mathbb{E}[Y_t Y_{t-k}]$.}
+
+Mean:
+\[
+\mathbb{E}[Y_t]
+=\sum_{k=0}^{\infty} \psi_k \mathbb{E}[\varepsilon_{t-k}]
+=0.
+\]
+
+Autocovariance:
+\[
+\gamma_Y(k)
+=\mathbb{E}[Y_t Y_{t-k}]
+=\mathbb{E}\!\bigg[
+\sum_{i,j\geq 0} \psi_i \psi_j\,
+\varepsilon_{t-i}\varepsilon_{t-k-j}
+\bigg]
+=\sum_{i,j\ge0}\psi_i\psi_j\,
+\mathbb E[\varepsilon_{t-i}\varepsilon_{t-k-j}].
+\]
+
+Since $(\varepsilon_{t})_t$ is white noise,
+\[
+\mathbb{E}[\varepsilon_{t-i}\varepsilon_{t-k-j}]
+=
+\begin{cases}
+\sigma_\varepsilon^2, & i=j+k,\\
+0, & \text{otherwise},
+\end{cases}
+\]
+
+Consider first $k\ge0$. Then $j=i-k\ge0$ forces $i\ge k$, so
+\[
+\gamma_Y(k)
+=\sigma_\varepsilon^2 \sum_{i=k}^{\infty}\psi_i\psi_{i-k}
+\underbrace{=}_{m=i-k}\sigma_\varepsilon^2 \sum_{m=0}^{\infty}\psi_{m+k}\psi_m.
+\]
+
+For $k<0$,
+\[
+\gamma_Y(k)=\gamma_Y(-k).
+\]
+
+Thus, for all $k\in\mathbb{Z}$,
+\[
+\boxed{
+\gamma_Y(k)
+=\sigma_\varepsilon^2 \sum_{m=0}^{\infty} \psi_m \psi_{m+|k|}
+}
+\]
+which depends only on $k$.
+\textit{We already showed a constant mean,
+hence the process is weakly stationary}.
+
+%---------------------------------------------
+\paragraph{Power Spectrum of $Y_t$}
+Take sampling frequency $f_s=1 \text{ Hz}$. Then
+the power spectrum is for $f\in[-f_s/2, f_s/2]$:
+\[
+S_Y(f)=\sum_{k\in\mathbb{Z}} \gamma_Y(k)\, e^{-2\pi i f k}.
+\]
+
+For
+\[
+Y_t=\sum_{j=0}^{\infty} \psi_j \varepsilon_{t-j}, 
+\qquad
+\mathbb{E}[\varepsilon_t]=0,\;
+\mathrm{Var}(\varepsilon_t)=\sigma_\varepsilon^2,
+\]
+
+the autocovariance is
+\[
+\gamma_Y(k)
+=\sigma_\varepsilon^2 \sum_{j=0}^{\infty} \psi_j \psi_{j+|k|},
+\qquad k\in\mathbb{Z},
+\]
+
+Insert into the PSD:
+\[
+S(f)
+=\sigma_\varepsilon^2 
+\sum_{k\in\mathbb{Z}} 
+\bigg( \sum_{j=0}^{\infty} \psi_j \psi_{j+k} \bigg) 
+e^{-2\pi i f k}.
+\]
+
+Define the transfer function
+\[
+\phi(z)=\sum_{j=0}^{\infty} \psi_j z^j.
+\]
+
+Then
+\[
+|\phi(e^{-2\pi i f})|^2 = \phi(e^{-2\pi i f})\, \overline{\phi(e^{-2\pi i f})}
+=\Big(\sum_{j=0}^\infty \psi_j e^{-2\pi i f j}\Big)
+\Big(\sum_{l=0}^\infty \psi_l e^{2\pi i f l}\Big)
+=\sum_{j,\ell}^\infty \psi_j \psi_\ell\, e^{-2\pi i f (j-\ell)}.
+\]
+
+Set $k=j-\ell$ and sum over all pairs $(j,\ell)$:
+
+$$
+\big|\phi(e^{-2\pi i f})\big|^2
+=\sum_{k=-\infty}^{\infty} \Big(\sum_{m=0}^\infty \psi_{m+k}\psi_m\Big) e^{-2\pi i f k},
+$$
+where we use the convention $\psi_{m+k}=0$ if $m+k<0$.
+But for $k\ge 0$, we have the autocovariance relation:
+
+$$\sum_{m=0}^\infty \psi_{m+k}\psi_m = \frac{1}{\sigma_\varepsilon^2}\gamma_Y(k)$$
+
+and for $k<0$ the same by symmetry of $\gamma_Y(k)$. So, substituting $\frac{1}{\sigma_\varepsilon^2}\gamma_Y(|k|)$ for the inner sum:
+
+$$
+\big|\phi(e^{-2\pi i f})\big|^2=\frac{1}{\sigma_\varepsilon^2}\sum_{k=-\infty}^{\infty} \gamma_Y(k) e^{-2\pi i f k}
+=\frac{1}{\sigma_\varepsilon^2}S_Y(f)
+$$
+
+That is:
+\[
+\boxed{
+S_Y(f)=\sigma_\varepsilon^2\big|\phi(e^{-2\pi i f})\big|^2,
+\quad
+\phi(z)=\sum_{m=0}^\infty \psi_m z^m,\ f\in\left[-\tfrac{1}{2},\tfrac{1}{2}\right].
+}
+\]
+
 
 \end{solution}
 
@@ -167,18 +303,52 @@ The dictionary is defined as the concatenation of all shifted MDCDT atoms for sc
 \begin{figure}
     \centering
     \begin{minipage}[t]{0.45\textwidth}
-    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{\includegraphics[width=\textwidth]{images/question_4_resid_norms.png}}
     \centerline{Norms of the successive residuals}
     \end{minipage}
     \hfill
-    \begin{minipage}[t]{0.45\textwidth}    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \begin{minipage}[t]{0.45\textwidth}    \centerline{\includegraphics[width=\textwidth]{images/question_4_recon_full.png}}
     \centerline{Reconstruction with 10 atoms}
     \end{minipage}
     \caption{Question 4}
+    \label{fig:omp_mcdt_resid_recon}
+\end{figure}
+
+%answer text
+As shown in Figure~\ref{fig:omp_mcdt_resid_recon}, the residual norms
+decrease fast at the beginning, up to iteration 4, then more slowly.
+Because the residual norm $\|r^{(k)}\|^2$ is the amount of 
+signal that is not explained by the selected atoms at iteration $k$,
+this means the first selected atoms capture a large amount of signal
+(maybe the enveloppe or the low frequencies).
+From iteration 7, the curve flattens, meaning the algorithm
+now does not capture much more signal.
+
+Looking at the reconstruction with 10 atoms on the right of Figure~\ref{fig:omp_mcdt_resid_recon},
+we see the reconstruction captures the large-scale oscillations
+of the signal, but misses the high-frequency fluctuations and the noise.
+\end{solution}
+
+
+\newpage
+%appendix
+\appendix
+\section{Complementary material}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/question_4_mdct_atoms.png}
+    \caption{MDCT atoms for L=64}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/question_4_recon_begin.png}
+    \caption{Reconstruction (zoomed) with 10 atoms}
 \end{figure}
 
 
 
-\end{solution}
+
+
 
 \end{document}
