@@ -5,8 +5,8 @@
 % Document title
 \title{Assignment 2 (ML for TS) - MVA}
 \author{
-Tristan Montalbetti \email{tristan.montalbetti@etu.minesparis.psl.eu} \\ % student 1
-Jules Royer \email{jules.royer@etu.minesparis.psl.eu} % student 2
+Jules Royer \email{jules.royer@etu.minesparis.psl.eu} \\ % student 1
+Tristan Montalbetti \email{tristan.montalbetti@etu.minesparis.psl.eu} % student 2
 }
 
 \begin{document}
@@ -55,6 +55,180 @@ An estimator $\hat{\theta}_n$ is consistent if it converges in probability when 
 
 \begin{solution}  % ANSWER HERE
 
+Let's remind the mathematical formulation connecting the distributional definition using the sequence $a_n$ to the Big $O$ notation for the rate of convergence.
+
+$$
+\textbf{1. General Definition: Rate of Convergence via Asymptotic Distribution}
+$$
+
+Let $\hat{\theta}_n$ be a sequence of estimators for a parameter $\theta$. We say that $\hat{\theta}_n$ converges to $\theta$ with the rate $1/a_n$ if there exists a sequence of positive numbers $a_n \to \infty$ and a non-degenerate random variable $Z$ such that:
+
+$$a_n (\hat{\theta}_n - \theta) \xrightarrow{d} Z \quad \text{as } n \to \infty$$
+
+If this condition holds, the estimation error decreases at the speed of $1/a_n$. In Big O notation in probability, this is expressed as:
+
+$$\hat{\theta}_n - \theta = O_p\left(\frac{1}{a_n}\right)$$
+
+$$
+\textbf{2. Application to the Sample Mean (i.i.d. Case)}
+$$
+
+Let $Y_1, \dots, Y_n$ be i.i.d. random variables with mean $\mu$ and finite variance $\sigma^2$. We analyze the sample mean $\bar{Y}_n = \frac{1}{n} \sum_{t=1}^n Y_t$.
+
+The Weak Law of Large Numbers guarantees that the estimator $\bar{Y}_n$ is consistent the convergence of $\bar{Y}_n \xrightarrow{P} \mu$.
+
+The Central Limit Theorem guarantees that the standardized difference converges in distribution to a Normal distribution:
+
+$$\sqrt{n}(\bar{Y}_n - \mu) \xrightarrow{d} \mathcal{N}(0, \sigma^2)$$
+
+Let's identify the Rate:
+Comparing this result to the general definition $a_n (\hat{\theta}_n - \theta) \xrightarrow{d} Z$:
+\begin{itemize}
+    \item The estimator is $\hat{\theta}_n = \bar{Y}_n$.
+    \item The limit variable is $Z \sim \mathcal{N}(0, \sigma^2)$.
+    \item The rate sequence is identified as $a_n = \sqrt{n}$.
+\end{itemize}
+
+Conclusion in Big O Notation:
+Since $a_n = \sqrt{n}$, the rate of convergence is the inverse of this sequence. Therefore:
+
+$$\bar{Y}_n - \mu = O_p\left(\frac{1}{\sqrt{n}}\right)$$
+
+This confirms that the sample mean converges at the rate $O(1/\sqrt{n})$.\\
+
+$$
+\textbf{Proof of Consistency and Convergence Rate for WSS Process}
+$$
+
+\subsection{Wide-Sense Stationary (WSS) Properties}
+
+A process $\{Y_t\}_{t \in \mathbb{Z}}$ is Wide-Sense Stationary if it satisfies three conditions:
+\begin{enumerate}
+\item Constant Mean: $\mathbb{E}[Y_t] = \mu$ for all $t$.
+\item Finite Variance: $\mathbb{E}[Y_t^2] < \infty$ (which implies $\text{Var}(Y_t) = \gamma(0) < \infty$).
+\item Stationary Autocovariance: $\text{Cov}(Y_t, Y_{t+k}) = \gamma(k)$, depending only on the lag $k$.
+\end{enumerate}
+
+
+\subsection{Bias-Variance Decomposition of MSE}
+
+We analyze the Mean Squared Error (MSE) of the sample mean estimator $\bar{Y}_n$. The MSE can always be decomposed into the sum of the squared bias and the variance:
+
+$$
+\text{MSE}(\bar{Y}_n) = \mathbb{E}\left[ (\bar{Y}_n - \mu)^2 \right] = \left( \text{Bias}(\bar{Y}_n) \right)^2 + \text{Var}(\bar{Y}_n)
+$$
+
+\subsection{Analysis of the Bias}
+We calculate the expectation of the sample mean to find the bias:
+
+$$
+\mathbb{E}[\bar{Y}_n] = \mathbb{E}\left[ \frac{1}{n} \sum_{t=1}^n Y_t \right] = \frac{1}{n} \sum_{t=1}^n \mathbb{E}[Y_t]
+$$
+
+Since the process is WSS, $\mathbb{E}[Y_t] = \mu$ for all $t$:
+
+$$
+\mathbb{E}[\bar{Y}_n] = \frac{1}{n} \sum_{t=1}^n \mu = \frac{1}{n} (n\mu) = \mu
+$$
+
+Therefore, the bias is zero:
+$$
+\text{Bias}(\bar{Y}_n) = \mathbb{E}[\bar{Y}_n] - \mu = 0
+$$
+
+Since the estimator is unbiased, the MSE simplifies to just the variance:
+$$
+\text{MSE}(\bar{Y}_n) = \text{Var}(\bar{Y}_n)
+$$
+
+
+\subsection{Developing the Variance (Double Sum to Single Sum)}
+We expand the variance of the sum:
+
+$$
+\text{Var}(\bar{Y}_n) = \text{Var}\left( \frac{1}{n} \sum_{t=1}^n Y_t \right) = \frac{1}{n^2} \sum_{t=1}^n \sum_{s=1}^n \text{Cov}(Y_t, Y_s)
+$$
+
+Using the WSS property, $\text{Cov}(Y_t, Y_s) = \gamma(t-s)$. Let $k = t-s$ be the lag. As $t$ and $s$ range from $1$ to $n$, the lag $k$ ranges from $-(n-1)$ to $(n-1)$.
+
+For a specific lag $k$, the number of pairs $(t, s)$ such that $t-s=k$ is exactly $n - |k|$.
+
+We can thus rewrite the double sum as a single sum over the lag $k$:
+
+$$
+\text{Var}(\bar{Y}_n) = \frac{1}{n^2} \sum_{k=-(n-1)}^{n-1} (n - |k|) \gamma(k)
+$$
+
+We can distribute one factor of $1/n$ inside the summation:
+
+$$
+\text{Var}(\bar{Y}_n) = \frac{1}{n} \sum_{k=-(n-1)}^{n-1} \left( \frac{n - |k|}{n} \right) \gamma(k)
+$$
+
+\subsection{Bounding the Variance}
+We observe that for any $|k| < n$, the term $\frac{n - |k|}{n} = 1 - \frac{|k|}{n}$ satisfies:
+$$
+\frac{n - |k|}{n} \le 1
+$$
+
+Using this inequality and taking the absolute value of the covariance terms to bound the sum:
+
+$$
+\text{Var}(\bar{Y}_n) \le \frac{1}{n} \sum_{k=-(n-1)}^{n-1} \left| \frac{n - |k|}{n} \gamma(k) \right| \le \frac{1}{n} \sum_{k=-(n-1)}^{n-1} |\gamma(k)|
+$$
+
+We extend the sum to infinity. Since terms are positive, the finite sum is less than the infinite sum:
+
+$$
+\text{Var}(\bar{Y}_n) \le \frac{1}{n} \sum_{k=-\infty}^{+\infty} |\gamma(k)|
+$$
+
+We know that $\sum |\gamma(k)| < +\infty$. Let $C = \sum_{k=-\infty}^{+\infty} |\gamma(k)|$.
+Thus:
+
+$$
+\text{MSE}(\bar{Y}_n) = \text{Var}(\bar{Y}_n) \le \frac{C}{n}
+$$
+
+As $n \to \infty$, $\frac{C}{n} \to 0$. This proves Convergence in Mean Square ($L_2$).
+
+
+\subsection{Convergence in Probability (Consistency)}
+We use Chebyshev's Inequality, which states that for any $\epsilon > 0$:
+
+$$
+P\left( |\bar{Y}_n - \mu| \ge \epsilon \right) \le \frac{\mathbb{E}[(\bar{Y}_n - \mu)^2]}{\epsilon^2}
+$$
+
+Substituting our bound for the MSE:
+
+$$
+P\left( |\bar{Y}_n - \mu| \ge \epsilon \right) \le \frac{C}{n \epsilon^2}
+$$
+
+Taking the limit as $n \to \infty$:
+$$
+\lim_{n \to \infty} P\left( |\bar{Y}_n - \mu| \ge \epsilon \right) = 0
+$$
+This proves that $\bar{Y}_n \xrightarrow{P} \mu$, so the estimator is Consistent and converges in Probability.
+
+\subsection{Convergence Rate and Distribution}
+Since Convergence in Probability implies Convergence in Distribution, we have established the asymptotic behavior required to identify the rate.
+
+We found that the MSE behaves as $O(1/n)$:
+$$
+\mathbb{E}[(\bar{Y}_n - \mu)^2] = O\left(\frac{1}{n}\right)
+$$
+
+This matches the result for the i.i.d. case (where variance is $\sigma^2/n$).
+Therefore, the error $|\bar{Y}_n - \mu|$ scales with $\frac{1}{\sqrt{n}}$.
+
+In Big O notation for probability:
+$$
+\bar{Y}_n - \mu = O_p\left( \frac{1}{\sqrt{n}} \right)
+$$
+
+The sample mean enjoys the same rate of convergence as the i.i.d. case.
 
 \end{solution}
 
@@ -80,7 +254,6 @@ Wold's theorem states that any weakly stationary process can be written as the s
 \end{exercise}
 
 \begin{solution}  % ANSWER HERE
-%here
 
 \paragraph*{Mean and Autocovariance of $Y_t$}
 For the MA($\infty$) process $Y_t=\sum_{k\ge 0} \psi_k\varepsilon_{t-k}$,
@@ -215,8 +388,6 @@ S_Y(f)=\sigma_\varepsilon^2\big|\phi(e^{-2\pi i f})\big|^2,
 \phi(z)=\sum_{m=0}^\infty \psi_m z^m,\ f\in\left[-\tfrac{1}{2},\tfrac{1}{2}\right].
 }
 \]
-
-
 \end{solution}
 
 \newpage
@@ -258,18 +429,202 @@ Properties on the roots of this polynomial drive the behavior of this process.
 
 \begin{solution}  % ANSWER HERE
 
+\subsection{Autocovariance Coefficients}
+
+We start with the defining equation of the AR(2) process (assuming zero mean):
+$$Y_t = \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + \varepsilon_t$$
+
+To find the behavior of the autocovariance $\gamma(\tau)$, we multiply the equation by $Y_{t-\tau}$ (for $\tau > 0$) and take the expectation $\mathbb{E}[\cdot]$:
+
+$$\mathbb{E}[Y_t Y_{t-\tau}] = \phi_1 \mathbb{E}[Y_{t-1} Y_{t-\tau}] + \phi_2 \mathbb{E}[Y_{t-2} Y_{t-\tau}] + \mathbb{E}[\varepsilon_t Y_{t-\tau}]$$
+
+Since $\varepsilon_t$ is independent of the past ($Y_{t-\tau}$), the last term is 0. Using the definition $\gamma(k) = \mathbb{E}[Y_t Y_{t-k}]$:
+
+$$\gamma(\tau) - \phi_1 \gamma(\tau-1) - \phi_2 \gamma(\tau-2) = 0$$
+
+This is a Homogeneous Linear Recurrence Relation of Order 2.\\
+
+To solve a linear recurrence $u_\tau - \phi_1 u_{\tau-1} - \phi_2 u_{\tau-2} = 0$, we look for solutions of the geometric form $\gamma(\tau) = \lambda^\tau$.
+Substituting this into the recurrence and dividing by $\lambda^{\tau-2}$:
+
+$$\lambda^2 - \phi_1 \lambda - \phi_2 = 0 \quad$$
+
+The exercise gives us the Characteristic Polynomial of the Process:
+$$\phi(z) = 1 - \phi_1 z - \phi_2 z^2$$
+Let $r_1, r_2$ be the roots of $\phi(z)$, meaning $\phi(r) = 0$.
+
+We can find a relationship between $\lambda$ and $r$, if we set $\lambda = \frac{1}{z}$, then $z = \frac{1}{\lambda}$. Substitute this into $\phi(z) = 0$:
+$$1 - \phi_1 \left(\frac{1}{\lambda}\right) - \phi_2 \left(\frac{1}{\lambda}\right)^2 = 0$$
+Multiply by $\lambda^2$:
+$$\lambda^2 - \phi_1 \lambda - \phi_2 = 0$$
+
+The roots of the recurrence equation ($\lambda_1, \lambda_2$) are exactly the inverses of the roots of the process polynomial ($r_1, r_2$).
+$$\lambda_1 = \frac{1}{r_1}, \quad \lambda_2 = \frac{1}{r_2}$$
+
+Since the problem states $|r_i| > 1$, we have $|\lambda_i| < 1$, ensuring the covariance decays to 0.
+
+\[
+\boxed{\gamma(\tau) = A (\lambda_1)^{|\tau|} + B (\lambda_2)^{|\tau|}}
+\]
+
+To determine $A$ and $B$, we need the initial values. We use the Yule-Walker equations. We can multiply the AR equation by $Y_{t-1}$ and take expectation:
+
+$$\mathbb{E}[Y_t Y_{t-1}] = \phi_1 \mathbb{E}[Y_{t-1} Y_{t-1}] + \phi_2 \mathbb{E}[Y_{t-2} Y_{t-1}] + \mathbb{E}[\varepsilon_t Y_{t-1}]$$
+
+$$\gamma(1) = \phi_1 \gamma(0) + \phi_2 \gamma(1)$$
+
+Now, we solve for $\gamma(1)$ as a function of $\gamma(0)$:
+$$\gamma(1) (1 - \phi_2) = \phi_1 \gamma(0)$$
+
+$$\gamma(1) = \frac{\phi_1}{1 - \phi_2} \gamma(0)$$
+
+Using Vieta's formulas, $\phi_1 = \lambda_1 + \lambda_2$ and $\phi_2 = -\lambda_1 \lambda_2$.
+$$\gamma(1) = \gamma(0) \frac{\lambda_1 + \lambda_2}{1 + \lambda_1 \lambda_2}$$
+
+
+We form the system of equations for $\tau=0$ and $\tau=1$ using the General Solution:
+
+\begin{enumerate}
+    \item $\tau = 0 \implies A + B = \gamma(0)$
+    \item $\tau = 1 \implies A \lambda_1 + B \lambda_2 = \gamma(1)$
+\end{enumerate}
+
+Substitute the expression for $\gamma(1)$ we just found:
+
+$$A \lambda_1 + B \lambda_2 = \gamma(0) \frac{\lambda_1 + \lambda_2}{1 + \lambda_1 \lambda_2}$$
+
+From (1), we know $B = \gamma(0) - A$. Substitute this into (2):
+
+$$A \lambda_1 + (\gamma(0) - A) \lambda_2 = \gamma(0) \frac{\lambda_1 + \lambda_2}{1 + \lambda_1 \lambda_2}$$
+
+Group terms by $A$ and $\gamma(0)$:
+
+$$A (\lambda_1 - \lambda_2) = \gamma(0) \left( \frac{\lambda_1 + \lambda_2}{1 + \lambda_1 \lambda_2} - \lambda_2 \right)$$
+
+Find a common denominator for the right side:
+$$\frac{\lambda_1 + \lambda_2 - \lambda_2(1 + \lambda_1 \lambda_2)}{1 + \lambda_1 \lambda_2} = \frac{\lambda_1 + \lambda_2 - \lambda_2 - \lambda_1 \lambda_2^2}{1 + \lambda_1 \lambda_2} = \frac{\lambda_1 (1 - \lambda_2^2)}{1 + \lambda_1 \lambda_2}$$
+
+So:
+$$A (\lambda_1 - \lambda_2) = \gamma(0) \frac{\lambda_1 (1 - \lambda_2^2)}{1 + \lambda_1 \lambda_2}$$
+
+This gives us A and B in terms of the Variance $\gamma(0)$:
+
+$$A = \gamma(0) \frac{\lambda_1 (1 - \lambda_2^2)}{(\lambda_1 - \lambda_2)(1 + \lambda_1 \lambda_2)}$$
+$$B = \gamma(0) \frac{\lambda_2 (1 - \lambda_1^2)}{(\lambda_2 - \lambda_1)(1 + \lambda_1 \lambda_2)}$$
+
+\subsection{Explanation of the correlograms}
+
+The correlogram is defined as the autocovariance normalized by the variance:
+$$\rho(\tau) = \frac{\gamma(\tau)}{\gamma(0)}$$
+
+From the previous step, we derived the autocovariance:
+$$\gamma(\tau) = A \lambda_1^{|\tau|} + B \lambda_2^{|\tau|}$$
+
+And we found the expressions for $A$ and $B$ in terms of $\gamma(0)$:
+$$A = \gamma(0) \frac{\lambda_1 (1 - \lambda_2^2)}{(\lambda_1 - \lambda_2)(1 + \lambda_1 \lambda_2)}$$
+$$B = -\gamma(0) \frac{\lambda_2 (1 - \lambda_1^2)}{(\lambda_1 - \lambda_2)(1 + \lambda_1 \lambda_2)}$$
+
+We can substitute into the definition of $\rho(\tau)$. When we divide by $\gamma(0)$, the term $\gamma(0)$ cancels out from the coefficients. Getting the explicit formula:
+
+For $\tau \ge 0$:
+$$\rho(\tau) = \left[ \frac{\lambda_1 (1 - \lambda_2^2)}{(\lambda_1 - \lambda_2)(1 + \lambda_1 \lambda_2)} \right] \lambda_1^\tau - \left[ \frac{\lambda_2 (1 - \lambda_1^2)}{(\lambda_1 - \lambda_2)(1 + \lambda_1 \lambda_2)} \right] \lambda_2^\tau$$
+
+Recall that $\lambda_{1,2} = \frac{1}{r_{1,2}}$ are the inverse roots.\\
+
+The shape of the plot (Figure 1 in your lab) depends entirely on whether $\lambda_1$ and $\lambda_2$ are real or complex numbers.
+
+If the polynomial has real roots, then $\lambda_1$ and $\lambda_2$ are real numbers (and $|\lambda| < 1$). The correlogram is simply a sum of two exponential decays. The plot will show a smooth exponential decay. This corresponds to the second AR(2).\\
+
+If the polynomial has complex roots, they must be conjugate pairs:
+$$\lambda_1 = R e^{i\theta} \quad \text{and} \quad \lambda_2 = R e^{-i\theta}$$
+Where $R = |\lambda| = \frac{1}{|r|}$ is the damping factor, and $\theta$ is the frequency.
+The plot will show a Damped Sinusoidal Wave. This corresponds to the first AR(2).
+
+\subsection{Calculation of power spectrum}
+
+The AR(2) process is defined as:
+\begin{equation}
+    Y_t = \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + \varepsilon_t
+\end{equation}
+where $\varepsilon_t$ is white noise with variance $\sigma^2$. The associated characteristic polynomial is given by $\phi(z) = 1 - \phi_1 z - \phi_2 z^2$.\\
+
+\textbf{1. Characteristic Polynomial Representation} \\
+Using the backshift operator $B$ (where $B Y_t = Y_{t-1}$), we can rewrite the process equation as:
+\begin{align*}
+    Y_t - \phi_1 Y_{t-1} - \phi_2 Y_{t-2} &= \varepsilon_t \\
+    (1 - \phi_1 B - \phi_2 B^2) Y_t &= \varepsilon_t
+\end{align*}
+Using the definition of the characteristic polynomial $\phi(\cdot)$, this simplifies to:
+\begin{equation}
+    \phi(B) Y_t = \varepsilon_t
+\end{equation}
+
+\textbf{2. Transfer Function} \\
+We can view the AR(2) process as a linear time-invariant filter applied to the white noise input $\varepsilon_t$. The relationship in the $Z$-domain is:
+\begin{equation}
+    Y_t = \frac{1}{\phi(B)} \varepsilon_t
+\end{equation}
+Thus, the transfer function of the system is $H(z) = \frac{1}{\phi(z)}$.
+
+\textbf{3. Power Spectrum Relation} \\
+For a linear system, the power spectrum of the output $S_Y(f)$ relates to the power spectrum of the input $S_{\varepsilon}(f)$ via the squared magnitude of the frequency response:
+\begin{equation}
+    S_Y(f) = \left| H(e^{-i 2\pi f}) \right|^2 S_{\varepsilon}(f)
+\end{equation}
+\begin{itemize}
+    \item The input is white noise, so its spectrum is constant: $S_{\varepsilon}(f) = \sigma^2$.
+    \item The frequency response is the transfer function evaluated on the unit circle $z = e^{-i 2\pi f}$ (since the sampling frequency is 1 Hz).
+\end{itemize}
+
+\subsection*{Final Result}
+Substituting the components into the relation, we obtain the spectral density of the process:
+
+\begin{equation}
+    S(f) = \frac{\sigma^2}{\left| \phi(e^{-i 2\pi f}) \right|^2}
+\end{equation}
+
+Explicitly expanding $\phi(\cdot)$, the final expression is:
+\begin{equation}
+    S(f) = \frac{\sigma^2}{\left| 1 - \phi_1 e^{-i 2\pi f} - \phi_2 e^{-i 4\pi f} \right|^2}
+\end{equation}
+
+
 \begin{figure}
     \centering
     \begin{minipage}[t]{0.45\textwidth}
-    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \centerline{\includegraphics[width=\textwidth]{images/simulated_ar2.png}}
     \centerline{Signal}
     \end{minipage}
     \hfill
-    \begin{minipage}[t]{0.45\textwidth}    \centerline{\includegraphics[width=\textwidth]{example-image-golden}}
+    \begin{minipage}[t]{0.45\textwidth}    \centerline{\includegraphics[width=\textwidth]{images/power_spectrum.png}}
     \centerline{Periodogram}
     \end{minipage}
     \caption{AR(2) process}\label{fig:q-ar-2}
 \end{figure}
+
+Based on the simulation of the AR(2) process with characteristic polynomial roots having modulus $r=1.05$ and phase $\theta = 2\pi/6$, we observe the following:
+
+\subsection{Interpretation of the plots}
+
+\textbf{1. Time Domain Analysis} \\
+The plot of the simulated signal $\{Y_t\}$ (Figure 2, top) exhibits a distinct \textbf{pseudo-periodic behavior}. Unlike white noise, the series displays a rhythmic, oscillatory pattern. 
+\begin{itemize}
+    \item The signal oscillates with a regular frequency, but the amplitude and phase are subject to stochastic variation due to the white noise driving term $\varepsilon_t$.
+    \item This behavior is characteristic of an AR(2) process with \textbf{complex conjugate roots}. The complex nature of the roots induces rotation in the state space, resulting in the observed oscillations.
+    \item Since the modulus of the roots $|r| = 1.05$ is strictly greater than 1, the process satisfies the condition for stationarity (roots of $\phi(z)$ lie outside the unit circle). This allows the oscillations to remain bounded and stable over the 2000 samples.
+\end{itemize}
+
+\textbf{2. Frequency Domain Analysis} \\
+The periodogram, computed using Welch's method, provides an estimate of the power spectral density $S(f)$.
+\begin{itemize}
+    \item \textbf{Spectral Peak:} We observe a sharp, dominant peak in the power spectrum. This indicates that the variance of the process is concentrated around a specific frequency.
+    \item \textbf{Theoretical Frequency:} The location of this peak matches the theoretical frequency derived from the phase of the roots $\theta$. Given $\theta = 2\pi/6 = \pi/3$, the theoretical frequency $f_{peak}$ is:
+    \begin{equation}
+        f_{peak} = \frac{\theta}{2\pi} = \frac{\pi/3}{2\pi} = \frac{1}{6} \approx 0.167 \text{ Hz}
+    \end{equation}
+    The dashed vertical line in the plot confirms that the empirical peak aligns perfectly with this theoretical value.
+    \item \textbf{Resonance:} The narrow width (sharpness) of the peak is a result of the root modulus $r=1.05$ being close to the unit circle ($|z|=1$). This proximity creates a "resonant" system where the process exhibits strong memory and persistent periodic correlation.
+\end{itemize}
 
 \end{solution}
 
@@ -327,28 +682,8 @@ now does not capture much more signal.
 Looking at the reconstruction with 10 atoms on the right of Figure~\ref{fig:omp_mcdt_resid_recon},
 we see the reconstruction captures the large-scale oscillations
 of the signal, but misses the high-frequency fluctuations and the noise.
+
+
 \end{solution}
-
-
-\newpage
-%appendix
-\appendix
-\section{Complementary material}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/question_4_mdct_atoms.png}
-    \caption{MDCT atoms for L=64}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/question_4_recon_begin.png}
-    \caption{Reconstruction (zoomed) with 10 atoms}
-\end{figure}
-
-
-
-
-
 
 \end{document}
